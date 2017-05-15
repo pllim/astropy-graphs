@@ -2,6 +2,9 @@ import numpy as np
 import dateutil.parser
 from datetime import datetime as dt
 import matplotlib.pyplot as plt
+import requests
+from bs4 import BeautifulSoup
+
 
 plt.rc('axes', titlesize='medium')
 plt.rc('axes', labelsize='medium')
@@ -14,9 +17,6 @@ plt.rc('ytick.minor', size=1)
 plt.rc('font', family='serif')
 plt.rc('axes', linewidth=0.5)
 plt.rc('patch', linewidth=0.5)
-
-import requests
-from bs4 import BeautifulSoup
 
 changelog = requests.get('http://docs.astropy.org/en/stable/changelog.html')
 soup = BeautifulSoup(changelog.text, 'html5lib')
@@ -35,7 +35,7 @@ def to_year_fraction(date):
 
     import time
 
-    def sinceEpoch(date): # returns seconds since epoch
+    def sinceEpoch(date):  # returns seconds since epoch
         return time.mktime(date.timetuple())
     s = sinceEpoch
 
@@ -48,6 +48,7 @@ def to_year_fraction(date):
     fraction = yearElapsed/yearDuration
 
     return date.year + fraction
+
 
 created = []
 for line in open('created.txt'):
