@@ -4,7 +4,12 @@ from datetime import datetime as dt
 import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup
+import sys
 
+if sys.argv[1:]:
+    start_date = float(sys.argv[1])
+else:
+    start_date = 2011.75
 
 plt.rc('axes', titlesize='medium')
 plt.rc('axes', labelsize='medium')
@@ -96,7 +101,7 @@ for release, date in releases.items():
 ax.set_xlabel("Time")
 ax.set_ylabel("Number of issues")
 ax.set_title("Astropy issues")
-ax.set_xlim(2011.75, np.max(created) + 0.1)
+ax.set_xlim(start_date, np.max(created) + 0.1)
 fig.savefig('issue_open_stats.png', dpi=150)
 
 ax.plot(created, created_n, color='red', lw=2, label='total')
