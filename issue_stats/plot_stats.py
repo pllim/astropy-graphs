@@ -35,6 +35,17 @@ for entry in soup.findAll('h2'):
     else:
         releases[version] = dt.strptime(date, "%Y-%m-%d")
 
+feature_freezes = {'3.0 ff': dt(2017, 12, 24),
+                   '2.0 ff': dt(2017, 6, 27),
+                   '1.3 ff': dt(2016, 12, 7),
+                   }
+
+pyastro_day2 = {'PiA15': dt(2015, 4, 21),
+                'PiA16': dt(2016, 3, 22),
+                'PiA17': dt(2017, 5, 9),
+                'PiA18': dt(2018, 5, 1),
+                }
+
 
 def to_year_fraction(date):
 
@@ -53,6 +64,19 @@ def to_year_fraction(date):
     fraction = yearElapsed/yearDuration
 
     return date.year + fraction
+
+
+def plot_lines(calendar, color='k', alpha=0.8, text_loc=5):
+
+    for event, date in calendar.items():
+        year_fraction = to_year_fraction(date)
+        if year_fraction > start_date:
+            if event.count(".") < 2:
+                ax.axvline(year_fraction, color=color, lw=1, alpha=alpha)
+                ax.text(year_fraction - 0.01, text_loc, event,
+                        rotation=90, ha='right', size=10)
+            else:
+                ax.axvline(year_fraction, color=color, lw=1, alpha=alpha * 0.3)
 
 
 created = []
@@ -86,28 +110,32 @@ total = np.cumsum(diffs)
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(dates, total, color='blue', lw=2, label='open')
-ax.xaxis.set_ticks([2011, 2012, 2013, 2014, 2015, 2016, 2017])
-ax.legend(loc='center left', fontsize=11)
-ax.xaxis.set_ticklabels(['2011', '2012', '2013', '2014', '2015', '2016', '2017'])
+ax.xaxis.set_ticks([2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+ax.legend(loc='center right', fontsize=11)
+ax.xaxis.set_ticklabels(['2011', '2012', '2013', '2014', '2015', '2016',
+                         '2017', '2018', '2019'])
 
-for release, date in releases.items():
-    if release.count(".") == 1:
-        ax.axvline(to_year_fraction(date), color='k', lw=1, alpha=0.8)
-        ax.text(to_year_fraction(date) - 0.01, 5, release, rotation=90, ha='right', size=10)
-    else:
-        ax.axvline(to_year_fraction(date), color='k', lw=1, alpha=0.3)
+lower_total = np.min(total[dates > start_date])
+lower_closed = np.min(closed_n[closed > start_date])
 
+plot_lines(releases, text_loc=lower_total)
+plot_lines(feature_freezes, color='red', alpha=0.6, text_loc=lower_total)
+plot_lines(pyastro_day2, color='green', text_loc=lower_total)
 
 ax.set_xlabel("Time")
 ax.set_ylabel("Number of issues")
-ax.set_title("Astropy issues")
-ax.set_xlim(start_date, np.max(created) + 0.1)
+ax.set_title("Astropy issues and PRs")
+ax.set_xlim(start_date, np.max(created))
+ax.set_ylim(lower_total * 0.98, np.max(total) * 1.02)
 fig.savefig('issue_open_stats.png', dpi=150)
 
-ax.plot(created, created_n, color='red', lw=2, label='total')
 ax.plot(closed, closed_n, color='green', lw=2, label='closed')
+ax.set_ylim(lower_closed * 0.98, np.max(closed_n) * 1.02)
+ax.legend(loc='center left', fontsize=11)
+fig.savefig('issue_closed_stats.png', dpi=150)
 
-upper = np.max(created_n)
+ax.plot(created, created_n, color='red', lw=2, label='total')
+ax.autoscale(axis='y')
 
 ax.legend(loc='center left', fontsize=11)
 fig.savefig('issue_stats.png', dpi=150)
