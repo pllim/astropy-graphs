@@ -11,8 +11,19 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler('color', ('#338ADD', '#9A44B6',
 tbl = Table.read('astropy_issue_states.txt', format='ascii.fixed_width')
 lifetime = np.array([x.strip(" seconds") for x in tbl['Lifetime']]).astype('float')
 is_pr = tbl['Is_PR'] == 'True'
+is_closed = tbl['State'] == 'closed'
 
 unique_labels = list(set([x for row in tbl for x in str(row['Labels']).split(",")]))
+
+plt.figure(1).clf()
+logdaybins = np.logspace(1-5, 8.25-5)
+plt.hist(lifetime[is_closed]/86400, bins=logdaybins, label='All Closed Issues')
+plt.hist(lifetime[np.logical_and(is_closed, is_pr)]/86400, bins=logdaybins, label='Closed PRs')
+
+plt.xscale('log')
+plt.xlabel("Lifetime (days)")
+plt.legend(loc='best')
+plt.savefig("issue_lifetime_closed.png")
 
 plt.figure(1).clf()
 logdaybins = np.logspace(1-5, 8.25-5)
