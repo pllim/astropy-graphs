@@ -1,6 +1,8 @@
 About
 =====
 
+Set your GitHub API token as `GITHUB_TOKEN` environment variable.
+
 Scripts to find the number of open/closed issues over time in the
 Astropy repository:
 

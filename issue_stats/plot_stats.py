@@ -1,10 +1,11 @@
-import numpy as np
-import dateutil.parser
+import sys
 from datetime import datetime as dt
+
+import dateutil.parser
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 from bs4 import BeautifulSoup
-import sys
 
 if sys.argv[1:]:
     start_date = float(sys.argv[1])
@@ -23,6 +24,7 @@ plt.rc('font', family='serif')
 plt.rc('axes', linewidth=0.5)
 plt.rc('patch', linewidth=0.5)
 
+# TODO: This might need fixing after the switch to towncrier?
 changelog = requests.get('http://docs.astropy.org/en/stable/changelog.html')
 soup = BeautifulSoup(changelog.text, 'html5lib')
 
