@@ -25,7 +25,7 @@ plt.rc('axes', linewidth=0.5)
 plt.rc('patch', linewidth=0.5)
 
 # TODO: This might need fixing after the switch to towncrier?
-changelog = requests.get('http://docs.astropy.org/en/stable/changelog.html')
+changelog = requests.get('https://docs.astropy.org/en/stable/changelog.html')
 soup = BeautifulSoup(changelog.text, 'html5lib')
 
 releases = {}
@@ -37,16 +37,21 @@ for entry in soup.findAll('h2'):
     else:
         releases[version] = dt.strptime(date, "%Y-%m-%d")
 
-feature_freezes = {'3.0 ff': dt(2017, 12, 24),
+feature_freezes = {'4.2 ff': dt(2020, 10, 23),
+                   '4.1 ff': dt(2020, 4, 24),
+                   '4.0 ff': dt(2019, 10, 25),
+                   '3.2 ff': dt(2019, 4, 19),
+                   '3.1 ff': dt(2018, 10, 26),
+                   '3.0 ff': dt(2017, 12, 24),
                    '2.0 ff': dt(2017, 6, 27),
-                   '1.3 ff': dt(2016, 12, 7),
-                   }
+                   '1.3 ff': dt(2016, 12, 7)}
 
-pyastro_day2 = {'PiA15': dt(2015, 4, 21),
-                'PiA16': dt(2016, 3, 22),
-                'PiA17': dt(2017, 5, 9),
+pyastro_day2 = {'PiA20': dt(2020, 4, 21),
+                'PiA19': dt(2019, 7, 30),
                 'PiA18': dt(2018, 5, 1),
-                }
+                'PiA17': dt(2017, 5, 9),
+                'PiA16': dt(2016, 3, 22),
+                'PiA15': dt(2015, 4, 21)}
 
 
 def to_year_fraction(date):
@@ -112,10 +117,11 @@ total = np.cumsum(diffs)
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(dates, total, color='blue', lw=2, label='open')
-ax.xaxis.set_ticks([2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019])
+ax.xaxis.set_ticks([2011, 2012, 2013, 2014, 2015, 2016,
+                    2017, 2018, 2019, 2020, 2021])
 ax.legend(loc='center right', fontsize=11)
 ax.xaxis.set_ticklabels(['2011', '2012', '2013', '2014', '2015', '2016',
-                         '2017', '2018', '2019'])
+                         '2017', '2018', '2019', '2020', '2021'])
 
 lower_total = np.min(total[dates > start_date])
 lower_closed = np.min(closed_n[closed > start_date])
