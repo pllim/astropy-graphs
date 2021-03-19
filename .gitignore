@@ -2,6 +2,7 @@
 plot_stats_bokeh.html
 lifetime_histogram_bokeh.html
 histogram_by_label_bokeh.html
+contributor_stats_bokeh.html
 astropy_issue_states.csv
 *.txt
 *.png
