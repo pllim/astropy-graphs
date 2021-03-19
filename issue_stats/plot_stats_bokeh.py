@@ -17,7 +17,7 @@ def read_issue_stats(filename):
         for line in fin:
             stats.append(line.split('T')[0])
     stats.sort()
-    return np.array(stats, dtype=np.datetime64)
+    return np.array(stats, dtype=np.datetime64), np.arange(len(stats)) + 1
 
 
 def find_astropy_releases():
@@ -41,24 +41,24 @@ def find_astropy_releases():
 IMPORTANT_DATES = {}
 
 IMPORTANT_DATES.update({
-    '4.2 ff': '2020-10-23',  # Feature freeze
-    '4.1 ff': '2020-04-24',
-    '4.0 ff': '2019-10-25',
-    '3.2 ff': '2019-04-19',
-    '3.1 ff': '2018-10-26',
-    '3.0 ff': '2017-12-24',
-    '2.0 ff': '2017-06-27',
-    '1.3 ff': '2016-12-07',
-    'PiA20': '2020-04-21',  # PyAstro Day 2
-    'PiA19': '2019-07-30',
-    'PiA18': '2018-05-01',
-    'PiA17': '2017-05-09',
-    'PiA16': '2016-03-22',
-    'PiA15': '2015-04-21'
+    '4.2 FF': '2020-10-23',  # Feature freeze
+    '4.1 FF': '2020-04-24',
+    '4.0 FF': '2019-10-25',
+    '3.2 FF': '2019-04-19',
+    '3.1 FF': '2018-10-26',
+    '3.0 FF': '2017-12-24',
+    '2.0 FF': '2017-06-27',
+    '1.3 FF': '2016-12-07',
+    'PyAstro 2020': '2020-04-21',  # PyAstro Day 2
+    'PyAstro 2019': '2019-07-30',
+    'PyAstro 2018': '2018-05-01',
+    'PyAstro 2017': '2017-05-09',
+    'PyAstro 2016': '2016-03-22',
+    'PyAstro 2015': '2015-04-21'
 })
 
-ASTROPY_ISSUES_CREATED = read_issue_stats('created.txt')
-ASTROPY_ISSUES_CLOSED = read_issue_stats('closed.txt')
+ASTROPY_ISSUES_CREATED, CREATED_N = read_issue_stats('created.txt')
+ASTROPY_ISSUES_CLOSED, CLOSED_N = read_issue_stats('closed.txt')
 
 # Plot
 
@@ -73,11 +73,20 @@ total = np.cumsum(diffs)
 p = figure(plot_height=300, plot_width=800,
            x_axis_type="datetime", x_axis_location="above",
            background_fill_color="#efefef", x_range=(dates[-5000], dates[-1]))
-p.line(x=dates, y=total)
+p.line(x=dates, y=total, line_color='red', line_width=2)
+p.line(x=ASTROPY_ISSUES_CLOSED, y=CLOSED_N, line_width=2, line_color='green',)
+p.line(x=ASTROPY_ISSUES_CREATED, y=CREATED_N, line_width=2, line_color='blue')
 p.yaxis.axis_label = "#"
 
+p2 = figure(plot_height=300, plot_width=800,
+            x_axis_type="datetime", x_axis_location="above",
+            background_fill_color="#efefef", x_range=p.x_range)
+p2.line(x=dates, y=total, line_color='red', line_width=2)
+p2.yaxis.axis_label = "#"
+
 select = figure(title="Astropy issues and PRs",
-                plot_height=130, plot_width=800, y_range=p.y_range,
+                plot_height=130, plot_width=800,
+                y_range=p.y_range,
                 x_axis_type="datetime", y_axis_type=None,
                 tools="", toolbar_location=None,
                 background_fill_color="#efefef")
@@ -86,26 +95,40 @@ range_tool = RangeTool(x_range=p.x_range)
 range_tool.overlay.fill_color = "navy"
 range_tool.overlay.fill_alpha = 0.2
 
-select.line(x=dates, y=total)
+select.line(x=dates, y=total, line_color='red', line_width=2,
+            legend_label='Open')
+select.line(x=ASTROPY_ISSUES_CLOSED, y=CLOSED_N, line_color='green',
+            line_width=2, legend_label='Closed')
+select.line(x=ASTROPY_ISSUES_CREATED, y=CREATED_N, line_color='blue',
+            line_width=2, legend_label='Total')
 select.ygrid.grid_line_color = None
 select.add_tools(range_tool)
 select.toolbar.active_multi = range_tool
+select.add_layout(select.legend[0], 'right')
 
 for key, val in IMPORTANT_DATES.items():
-    if 'ff' in key:
+    if 'FF' in key:
         color = 'red'
-    elif 'PiA' in key:
+        ls = 'solid'
+        yloc = 600
+    elif 'PyAstro' in key:
         color = 'blue'
+        ls = 'dashed'
+        yloc = 0
     else:
         color = 'green'
+        ls = 'solid'
+        yloc = 600
 
     t = time.mktime(dt.strptime(val, '%Y-%m-%d').timetuple()) * 1000
-    vline = Span(location=t, dimension='height', line_color=color)
+    vline = Span(location=t, dimension='height', line_color=color,
+                 line_dash=ls, line_alpha=0.5)
     p.renderers.extend([vline, ])
+    p2.renderers.extend([vline, ])
     select.renderers.extend([vline, ])
 
-    vline_label = Label(x=t, y=0, x_units='data', y_units='data',
-                        angle=np.pi / 2, text_color=color, text=key)
-    p.add_layout(vline_label)
+    vline_label = Label(x=t, y=yloc, text=key, x_units='data', y_units='data',
+                        angle=np.pi / 2, text_color=color)
+    p2.add_layout(vline_label)
 
-show(column(p, select))
+show(column(p, p2, select))
