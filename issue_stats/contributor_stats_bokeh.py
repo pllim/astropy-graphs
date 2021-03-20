@@ -5,7 +5,7 @@ from astropy.io import ascii
 from astropy.table import Table
 
 from bokeh.layouts import row
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Arrow, VeeHead, Label
 from bokeh.plotting import figure, show
 
 tbl = Table.read(
@@ -62,9 +62,8 @@ p.legend.location = "top_left"
 unique_authors = sorted(set(tbl['Creator']))  # Does not account for dup acc.
 issues_by_author = []
 prs_by_author = []
-logbins = [0, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 450,
-           500, 1000]
 recent = tbl['Creation Date'] > np.datetime64('2018-03-19')  # Last 3 years
+logbins = [0, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 500]
 issue_counter = Counter()
 pr_counter = Counter()
 
@@ -81,6 +80,15 @@ for user in unique_authors:
     prs_by_author.append(n2)
     pr_counter[user] += n2
 
+# Maybe can put in slide... not sure
+print('Issues')
+for key, val in issue_counter.most_common(25):
+    print(f'{key}:{val}')
+print()
+print('PRs')
+for key, val in pr_counter.most_common(25):
+    print(f'{key}:{val}')
+
 hist_issues, edges_issues = np.histogram(issues_by_author, density=False,
                                          bins=logbins)
 hist_prs, edges_prs = np.histogram(prs_by_author, density=False,
@@ -96,6 +104,14 @@ p2.quad(top=hist_prs, bottom=0,
         left=edges_prs[:-1], right=edges_prs[1:],
         fill_color="#338ADD", line_color="white", fill_alpha=0.5,
         legend_label="PRs")
+
+# Single-issue/PR so many, we cannot show it all.
+p2.add_layout(Arrow(end=VeeHead(size=15),
+                    start_units='data', end_units='data',
+                    x_start=2.5, x_end=2.5, y_start=25, y_end=30))
+p2.add_layout(Label(x=8, y=28, x_units='data', y_units='data',
+                    text=f'Issues: {hist_issues[0]}, PRs: {hist_prs[0]}'))
+
 p2.y_range.start = 0
 p2.y_range.end = 30
 p2.yaxis.axis_label = '# Authors'
@@ -104,10 +120,3 @@ p2.legend.click_policy = "hide"
 p2.legend.location = "top_right"
 
 show(row(p, p2))
-
-# Maybe can put in slide... not sure
-print('Issues')
-print(issue_counter.most_common(25))
-print()
-print('PRs')
-print(pr_counter.most_common(25))

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from astropy.io import ascii
 from astropy.table import Table
 
@@ -55,10 +56,29 @@ for label in labels:
     n_issues_bugs.append(np.count_nonzero(
         has_label_and_bug & ~is_pr & is_open))
 
+# Shorten label for display
+labels[labels.index('visualization.wcsaxes')] = 'wcsaxes'
+
 data = ColumnDataSource({'labels': labels,
                          'Issues_all': n_issues,
                          'Issues_bug': n_issues_bugs,
                          'PRs': n_prs})
+
+# Print some stats
+df = pd.DataFrame.from_dict({'labels': labels,
+                             'Issues_all': n_issues,
+                             'Issues_bug': n_issues_bugs,
+                             'PRs': n_prs})
+df['Bug_ratio'] = df['Issues_bug'] / df['Issues_all']
+print('Top 5 most issues')
+print(df.nlargest(5, 'Issues_all'))
+print()
+print('Top 3 most bug ratio')
+print(df.nlargest(3, 'Bug_ratio'))
+print()
+print('Top 5 most PRs')
+print(df.nlargest(5, 'PRs'))
+
 TOOLTIPS = [
     ("Label", "@labels"),
     ("# Issues (all)", "@Issues_all"),
@@ -66,7 +86,7 @@ TOOLTIPS = [
     ("# PRs", "@PRs")]
 
 p = figure(title='Open issues/PRs by subpackage', x_range=labels,
-           background_fill_color="#fafafa", tooltips=TOOLTIPS)
+           plot_width=800, background_fill_color="#fafafa", tooltips=TOOLTIPS)
 p.vbar(x="labels", top="Issues_all", width=0.9, color="#9A44B6",
        source=data, legend_label="Issues (all)")
 p.vbar(x="labels", top="Issues_bug", width=0.9, color="#A60628",
@@ -78,6 +98,7 @@ p.y_range.start = 0
 p.yaxis.axis_label = '#'
 p.x_range.range_padding = 0.1
 p.xaxis.major_label_orientation = np.pi / 2
+p.xaxis.major_label_text_font_size = "18pt"
 p.xgrid.grid_line_color = None
 p.axis.minor_tick_line_color = None
 p.outline_line_color = None
