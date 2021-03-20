@@ -72,13 +72,17 @@ for user in unique_authors:
 
     issues = tbl[recent & mask & ~is_pr]
     n1 = len(issues)
-    issues_by_author.append(n1)
-    issue_counter[user] += n1
+
+    if n1 > 0:
+        issues_by_author.append(n1)
+        issue_counter[user] += n1
 
     prs = tbl[recent & mask & is_pr]
     n2 = len(prs)
-    prs_by_author.append(n2)
-    pr_counter[user] += n2
+
+    if n2 > 0:
+        prs_by_author.append(n2)
+        pr_counter[user] += n2
 
 # Maybe can put in slide... not sure
 print('Issues')
