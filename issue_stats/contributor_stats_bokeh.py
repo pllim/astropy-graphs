@@ -92,6 +92,25 @@ print()
 print('PRs')
 for key, val in pr_counter.most_common(25):
     print(f'{key}:{val}')
+print()
+
+# More stats
+issues_by_author = np.array(issues_by_author)
+prs_by_author = np.array(prs_by_author)
+
+
+def get_n_author_top_percentile(n, sut):
+    diff_percentile = 100 - n
+    n_sut = np.percentile(sut, diff_percentile)
+    top_arr = np.where(sut > n_sut)
+    return len(top_arr[0])
+
+
+print('# issue authors in top 5 %tile: '
+      f'{get_n_author_top_percentile(5, issues_by_author)}')
+print('# PR authors in top 5 %tile: '
+      f'{get_n_author_top_percentile(5, prs_by_author)}')
+print()
 
 hist_issues, edges_issues = np.histogram(issues_by_author, density=False,
                                          bins=logbins)
