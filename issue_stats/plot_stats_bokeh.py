@@ -5,10 +5,9 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
-from bokeh.io import show
 from bokeh.layouts import column
 from bokeh.models import RangeTool, Span, Label
-from bokeh.plotting import figure
+from bokeh.plotting import figure, show
 
 
 def read_issue_stats(filename):

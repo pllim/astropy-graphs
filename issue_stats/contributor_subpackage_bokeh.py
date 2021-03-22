@@ -4,6 +4,7 @@ import numpy as np
 from astropy.io import ascii
 from astropy.table import Table
 
+from bokeh.layouts import row as bokeh_row
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.plotting import figure, show
 
@@ -73,13 +74,25 @@ def issue_prs_mix_per_subpkg(subpkg):
     return only_issues, only_prs, both_issues_prs
 
 
-data = {'only_issues': [], 'only_prs': [], 'both_issues_prs': []}
+data = {'only_issues': [], 'only_prs': [], 'both_issues_prs': [],
+        'issues_by_pr_author': [], 'issues_not_by_pr_author': []}
 for label in labels:
     only_issues, only_prs, both_issues_prs = issue_prs_mix_per_subpkg(label)
     data['only_issues'].append(only_issues)
     data['only_prs'].append(only_prs)
     data['both_issues_prs'].append(both_issues_prs)
 
+    n_issues_by_pr_author = 0
+    n_issues_not_by_pr_author = 0
+    for author in subpkg_counter[label]:
+        n = subpkg_counter[label][author]['n_issues']
+        if subpkg_counter[label][author]['n_prs'] < 1:
+            n_issues_not_by_pr_author += n
+        else:
+            n_issues_by_pr_author += n
+
+    data['issues_by_pr_author'].append(n_issues_by_pr_author)
+    data['issues_not_by_pr_author'].append(n_issues_not_by_pr_author)
 
 # Shorten label for display
 labels[labels.index('visualization.wcsaxes')] = 'wcsaxes'
@@ -114,4 +127,30 @@ p.outline_line_color = None
 p.legend.click_policy = "hide"
 p.legend.location = "top_right"
 
-show(p)
+TOOLTIPS2 = [
+    ("Label", "@labels"),
+    ("# Not PR authors", "@issues_not_by_pr_author"),
+    ("# PR authors", "@issues_by_pr_author")]
+
+p2 = figure(
+    title='Issues opened by contributor types by subpackage (last 3 years)',
+    x_range=labels, plot_width=800, background_fill_color="#fafafa")
+subp2 = p2.vbar(x="labels", top="issues_not_by_pr_author", width=0.9,
+                color="#9A44B6", source=data, legend_label="Not PR authors")
+p2.vbar(x="labels", top="issues_by_pr_author", width=0.9, color="#338ADD",
+        fill_alpha=0.5, source=data, legend_label="PR authors")
+
+p2.add_tools(HoverTool(tooltips=TOOLTIPS2, renderers=[subp2]))
+
+p2.y_range.start = 0
+p2.yaxis.axis_label = '# Issues'
+p2.x_range.range_padding = 0.1
+p2.xaxis.major_label_orientation = np.pi / 2
+p2.xaxis.major_label_text_font_size = "18pt"
+p2.xgrid.grid_line_color = None
+p2.axis.minor_tick_line_color = None
+p2.outline_line_color = None
+p2.legend.click_policy = "hide"
+p2.legend.location = "top_right"
+
+show(bokeh_row(p, p2))
