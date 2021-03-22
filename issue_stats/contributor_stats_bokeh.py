@@ -63,7 +63,8 @@ unique_authors = sorted(set(tbl['Creator']))  # Does not account for dup acc.
 issues_by_author = []
 prs_by_author = []
 recent = tbl['Creation Date'] > np.datetime64('2018-03-19')  # Last 3 years
-logbins = [0.001, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 500]
+logbins = [0.001, 5, 10, 20, 30, 40, 50, 100, 150,
+           200, 250, 300, 350, 400, 500]
 issue_counter = Counter()
 pr_counter = Counter()
 
