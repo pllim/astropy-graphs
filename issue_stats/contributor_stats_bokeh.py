@@ -63,7 +63,7 @@ unique_authors = sorted(set(tbl['Creator']))  # Does not account for dup acc.
 issues_by_author = []
 prs_by_author = []
 recent = tbl['Creation Date'] > np.datetime64('2018-03-19')  # Last 3 years
-logbins = [0, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 500]
+logbins = [0.001, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 500]
 issue_counter = Counter()
 pr_counter = Counter()
 
@@ -103,12 +103,12 @@ def get_n_author_top_percentile(n, sut):
     diff_percentile = 100 - n
     n_sut = np.percentile(sut, diff_percentile)
     top_arr = np.where(sut > n_sut)
-    return len(top_arr[0])
+    return len(top_arr[0]), n_sut
 
 
-print('# issue authors in top 5 %tile: '
+print('# issue authors in top 5 %tile, # issue: '
       f'{get_n_author_top_percentile(5, issues_by_author)}')
-print('# PR authors in top 5 %tile: '
+print('# PR authors in top 5 %tile, # PR: '
       f'{get_n_author_top_percentile(5, prs_by_author)}')
 print()
 
@@ -118,6 +118,7 @@ hist_prs, edges_prs = np.histogram(prs_by_author, density=False,
                                    bins=logbins)
 
 p2 = figure(title="Number of issues and PRs by authors (last 3 years)",
+            x_axis_type="log",
             background_fill_color="#efefef", tooltips=[("(x,y)", "($x, $y)")])
 p2.quad(top=hist_issues, bottom=0,
         left=edges_issues[:-1], right=edges_issues[1:],
@@ -131,8 +132,8 @@ p2.quad(top=hist_prs, bottom=0,
 # Single-issue/PR so many, we cannot show it all.
 p2.add_layout(Arrow(end=VeeHead(size=15),
                     start_units='data', end_units='data',
-                    x_start=2.5, x_end=2.5, y_start=25, y_end=30))
-p2.add_layout(Label(x=8, y=28, x_units='data', y_units='data',
+                    x_start=5.2, x_end=5.2, y_start=25, y_end=30))
+p2.add_layout(Label(x=5.5, y=28, x_units='data', y_units='data',
                     text=f'Issues: {hist_issues[0]}, PRs: {hist_prs[0]}'))
 
 p2.y_range.start = 0
